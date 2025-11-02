@@ -1,19 +1,18 @@
 const fetch = require('node-fetch');
 
-// Your GitHub username has been added here.
-const GITHUB_USERNAME = 'fspldatacente';
+// Your GitHub username has been updated here.
+const GITHUB_USERNAME = 'SPLGURU';
 const { TEAM_GIST_ID } = process.env;
 
 // --- START of MODIFICATION ---
-// Whitelist of allowed domains
+// Whitelist of allowed domains has been updated with your new site URLs.
 const ALLOWED_ORIGINS = [
-    'https://fsdc.netlify.app',    // Your LIVE site
-    'https://fsdc2.netlify.app'   // Your TEST site
+    'https://splpredictor.netlify.app',    // Your NEW LIVE site
+    'https://splpredictor2.netlify.app'   // Your NEW TEST site
 ];
 // --- END of MODIFICATION ---
 
 exports.handler = async (event) => {
-    // --- START of MODIFICATION ---
     // Dynamically set the CORS header based on the request's origin
     const origin = event.headers.origin;
     const accessControlOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]; // Default to live site
@@ -22,7 +21,6 @@ exports.handler = async (event) => {
         'Access-Control-Allow-Origin': accessControlOrigin,
         'Content-Type': 'application/json'
     };
-    // --- END of MODIFICATION ---
 
     if (!TEAM_GIST_ID || !GITHUB_USERNAME) {
         const errorMessage = "Server configuration error: GIST_ID or GITHUB_USERNAME is not set.";
@@ -67,4 +65,4 @@ exports.handler = async (event) => {
             body: JSON.stringify({ error: error.message }),
         };
     }
-};
+}; 

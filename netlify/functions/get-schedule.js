@@ -1,12 +1,16 @@
 const fetch = require('node-fetch');
 
-const GITHUB_USERNAME = 'fspldatacente'; 
+// Your GitHub username has been updated here.
+const GITHUB_USERNAME = 'SPLGURU'; 
 const { SCHEDULE_GIST_ID } = process.env;
 
+// --- START of MODIFICATION ---
+// Whitelist of allowed domains has been updated with your new site URLs.
 const ALLOWED_ORIGINS = [
-    'https://fsdc.netlify.app',
-    'https://fsdc2.netlify.app'
+    'https://splpredictor.netlify.app',    // Your NEW LIVE site
+    'https://splpredictor2.netlify.app'   // Your NEW TEST site
 ];
+// --- END of MODIFICATION ---
 
 exports.handler = async (event) => {
     const origin = event.headers.origin;
