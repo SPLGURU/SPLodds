@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stats Viewer</title>
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="stats.css">
+</head>
+<body>
+    <div class="top-nav">
+        <h1><a href="/" style="color: inherit; text-decoration: none;">SPL Data Center</a></h1>
+        <div class="nav-buttons">
+            <button disabled>Stats</button>
+            <a href="../predictions/predictions.html"><button>Predictions</button></a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>Data Fetcher</h1>
+
+        <div class="tabs">
+            <button class="tab-link active" data-tab="Teams">Teams</button>
+            <button class="tab-link" data-tab="Players">Players</button>
+            <button class="tab-link" data-tab="GKs">GKs</button>
+            <button class="tab-link" data-tab="Corrections">Corrected Data</button>
+        </div>
+
+        <div id="Teams" class="tab-content active">
+            <button id="fetch-all-teams-button">Refresh Team Stats</button>
+            <p>Status: <span id="status-teams" class="status-pending">Not Run</span></p>
+
+            <div class="sub-tabs" id="teams-sub-tabs">
+                <button class="sub-tab-link active" data-sub-tab="overall">Overall</button>
+                <button class="sub-tab-link" data-sub-tab="home">Home</button>
+                <button class="sub-tab-link" data-sub-tab="away">Away</button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th data-sort="standings" class="sortable">Standings</th>
+                        <th>Stat Rank</th>
+                        <th>Team</th>
+                        <th data-sort="mp" class="sortable">MP</th>
+                        <th data-sort="gf" class="sortable">GF</th>
+                        <th data-sort="ga" class="sortable">GA</th>
+                        <th data-sort="xg" class="sortable">xG</th>
+                        <th data-sort="xgc" class="sortable">xGC</th>
+                        <th data-sort="npxg" class="sortable">npxG</th>
+                        <th data-sort="npxgc" class="sortable">npxGC</th>
+                        <th data-sort="xg_delta" class="sortable">xG Delta</th>
+                        <th data-sort="npxg_delta" class="sortable">npxG Delta</th>
+                        <th data-sort="ps" class="sortable">P. Scored</th>
+                        <th data-sort="pm" class="sortable">P. Missed</th>
+                        <th data-sort="pc" class="sortable">P. Conceded</th>
+                    </tr>
+                </thead>
+                <tbody id="teams-tbody"></tbody>
+            </table>
+        </div>
+
+        <div id="Players" class="tab-content">
+            <button id="fetch-players-button">Refresh Player & GK Stats</button>
+            <p>Status: <span id="status-players" class="status-pending">Not Run</span></p>
+
+            <div class="sub-tabs" id="players-sub-tabs">
+                <button class="sub-tab-link active" data-sub-tab="overall">Overall</button>
+                <button class="sub-tab-link" data-sub-tab="home">Home</button>
+                <button class="sub-tab-link" data-sub-tab="away">Away</button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Player</th>
+                        <th>Team</th>
+                        <th data-sort="mp" class="sortable">MP</th>
+                        <th data-sort="g" class="sortable">G</th>
+                        <th data-sort="ps" class="sortable">P. Scored</th>
+                        <th data-sort="pm" class="sortable">P. Missed</th>
+                        <th data-sort="xg" class="sortable">xG</th>
+                        <th data-sort="npxg" class="sortable">npxG</th>
+                        <th data-sort="xa" class="sortable">xA</th>
+                        <th data-sort="a" class="sortable">A</th>
+                        <th data-sort="xg_delta" class="sortable">xG Delta</th>
+                        <th data-sort="npxg_delta" class="sortable">npxG Delta</th>
+                    </tr>
+                </thead>
+                <tbody id="players-tbody"></tbody>
+            </table>
+            <div id="player-pagination" class="pagination">
+                <button id="player-prev-btn">Previous</button>
+                <span id="player-page-info"></span>
+                <button id="player-next-btn">Next</button>
+            </div>
+        </div>
+
+        <div id="GKs" class="tab-content">
+            <p>Status: <span id="status-gks" class="status-pending">Run "Fetch Player & GK Stats"</span></p>
+            
+            <div class="sub-tabs" id="gks-sub-tabs">
+                <button class="sub-tab-link active" data-sub-tab="overall">Overall</button>
+                <button class="sub-tab-link" data-sub-tab="home">Home</button>
+                <button class="sub-tab-link" data-sub-tab="away">Away</button>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Player</th>
+                        <th>Team</th>
+                        <th data-sort="cs" class="sortable">CS</th>
+                        <th data-sort="s" class="sortable">Saves</th>
+                        <th data-sort="xgp" class="sortable">xGP</th>
+                        <th data-sort="ps" class="sortable">Pens Saved</th>
+                    </tr>
+                </thead>
+                <tbody id="gks-tbody"></tbody>
+            </table>
+        </div>
+
+        <div id="Corrections" class="tab-content">
+            <p>This table shows stats that were automatically corrected by the daily audit process. It is cleared and repopulated each day.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Stat</th>
+                        <th>Old Value</th>
+                        <th>New Value</th>
+                        <th>Round</th>
+                    </tr>
+                </thead>
+                <tbody id="corrections-tbody"></tbody>
+            </table>
+        </div>
+
+        <div class="report-panel">
+            <h3>Build Report</h3>
+            <pre id="build-report-content"></pre>
+        </div>
+    </div>
+    <script src="../modules/data-calculator.js"></script>
+    <script src="../modules/table-renderer.js"></script>
+    <script src="stats.js"></script>
+</body>
+</html>

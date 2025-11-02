@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predictions</title>
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="predictions.css">
+</head>
+<body>
+    <div class="top-nav">
+        <h1><a href="/" style="color: inherit; text-decoration: none;">SPL Data Center</a></h1>
+        <div class="nav-buttons">
+            <a href="../stats/stats.html"><button>Stats</button></a>
+            <button disabled>Predictions</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>Predictions</h1>
+        <div class="prediction-controls">
+            <label for="round-selector">Select Round:</label>
+            <select id="round-selector">
+                <option value="" selected disabled>Choose Round</option>
+                <option value="6">Round 6</option>
+                <option value="7">Round 7</option>
+                <option value="8">Round 8</option>
+                <option value="9">Round 9</option>
+                <option value="10">Round 10</option>
+                <option value="11">Round 11</option>
+                <option value="12">Round 12</option>
+                <option value="13">Round 13</option>
+                <option value="14">Round 14</option>
+                <option value="15">Round 15</option>
+                <option value="16">Round 16</option>
+                <option value="17">Round 17</option>
+                <option value="18">Round 18</option>
+                <option value="19">Round 19</option>
+                <option value="20">Round 20</option>
+                <option value="21">Round 21</option>
+                <option value="22">Round 22</option>
+                <option value="23">Round 23</option>
+                <option value="24">Round 24</option>
+                <option value="25">Round 25</option>
+                <option value="26">Round 26</option>
+                <option value="27">Round 27</option>
+                <option value="28">Round 28</option>
+                <option value="29">Round 29</option>
+                <option value="30">Round 30</option>
+                <option value="31">Round 31</option>
+                <option value="32">Round 32</option>
+                <option value="33">Round 33</option>
+                <option value="34">Round 34</option>
+            </select>
+        </div>
+
+        <div class="stats-filter-buttons">
+            <button id="filter-overall" data-filter="overall">Overall</button>
+            <button id="filter-last3" class="active" data-filter="lastN" data-value="3">Last 3</button>
+            <button id="filter-last5" data-filter="lastN" data-value="5">Last 5</button>
+            <button id="filter-last8" data-filter="lastN" data-value="8">Last 8</button>
+        </div>
+
+        <div class="model-filter-buttons">
+            <button class="active" data-model="attack_vs_defense">Attack vs. Defense Model</button>
+            <span class="model-details-link">Details</span>
+        </div>
+
+        <div id="model-explanation-panel" style="display: none;">
+            <h4>Attack vs. Defense Model</h4>
+            <p>This model predicts a score by first estimating the chances (npxG) each team will create based on their opponent's defensive form, and then converting those chances into goals using each team's demonstrated finishing skill.</p>
+            
+            <h5>Home Team Predicted Score Formula:</h5>
+            <code>( (Home_AvgnpxG + Away_AvgnpxGC) / 2 ) / Home_npxGneededToScore</code>
+
+            <h5>Away Team Predicted Score Formula:</h5>
+            <code>( (Away_AvgnpxG + Home_AvgnpxGC) / 2 ) / Away_npxGneededToScore</code>
+
+            <h5>Variable Definitions:</h5>
+            <ul>
+                <li><strong>AvgnpxG:</strong> A team's average non-penalty expected goals per match from the filtered set of games.</li>
+                <li><strong>AvgnpxGC:</strong> A team's average non-penalty expected goals conceded per match from the filtered set of games.</li>
+                <li><strong>npxGneededToScore:</strong> A team's "finishing skill," calculated as (Total npxG / Total npG). A value of 1.0 is used by default if a team has not scored any non-penalty goals.</li>
+            </ul>
+        </div>
+
+        <div id="model-evaluation-panel">
+            <div class="evaluation-item">
+                <span class="evaluation-label">Score Success Rate:</span>
+                <span id="score-success-rate" class="evaluation-value">--%</span>
+            </div>
+            <div class="evaluation-item">
+                <span class="evaluation-label">Result Success Rate:</span>
+                <span id="result-success-rate" class="evaluation-value">--%</span>
+            </div>
+        </div>
+
+        <div id="fixtures-container"></div>
+    </div>
+    
+    <script src="predictions.js"></script>
+</body>
+</html>

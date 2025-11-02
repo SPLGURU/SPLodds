@@ -1,0 +1,16 @@
+[build]
+  publish = "/"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[functions.update-hourly]
+  # Runs at the start of every hour
+  schedule = "0 * * * *"
+  timeout = 300 
+
+[functions.correct-daily]
+  # Runs at 6:00 AM UTC (9:00 AM Riyadh time)
+  schedule = "0 6 * * *"
+  timeout = 300
