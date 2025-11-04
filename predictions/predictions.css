@@ -19,7 +19,7 @@
 }
 
 .stats-filter-buttons {
-    display: none; /* Hides the filter buttons */
+    display: flex;
     justify-content: center;
     gap: 15px;
     margin-top: 20px;
