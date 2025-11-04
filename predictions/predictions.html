@@ -80,7 +80,7 @@
             <ul>
                 <li><strong>AvgnpxG:</strong> A team's average non-penalty expected goals per match from the filtered set of games.</li>
                 <li><strong>AvgnpxGC:</strong> A team's average non-penalty expected goals conceded per match from the filtered set of games.</li>
-                <li><strong>npxGneededToScore:</strong> A team's "finishing skill," calculated as (Total npxG / Total npG). A value of 1.0 is used by default if a team has not scored any non-penalty goals.</li>
+                <li><strong>npxGneededToScore:</strong> A team's "finishing skill," calculated as (Total npxG / Total npG). If a team has not scored any non-penalty goals in the selected filter, this value cannot be calculated, and the model will not produce a prediction (N/A).</li>
             </ul>
         </div>
 
