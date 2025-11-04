@@ -133,12 +133,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 detailedScoresHTML += differenceHTML;
             }
             
-            detailedScoresHTML += `
-                <div class="score-line">
-                    <span class="score-label">Decimal Predicted Score:</span>
-                    <span class="score-value">${predictedScore.home} - ${predictedScore.away}</span>
-                </div>
-            `;
+            if (currentResultFormat === 'rounded') {
+                detailedScoresHTML += `
+                    <div class="score-line">
+                        <span class="score-label">Decimal Predicted Score:</span>
+                        <span class="score-value">${predictedScore.home} - ${predictedScore.away}</span>
+                    </div>
+                `;
+            } else { // decimal format
+                const roundedHome = customRound(predictedScore.home);
+                const roundedAway = customRound(predictedScore.away);
+                detailedScoresHTML += `
+                    <div class="score-line">
+                        <span class="score-label">Rounded Predicted Score:</span>
+                        <span class="score-value">${roundedHome} - ${roundedAway}</span>
+                    </div>
+                `;
+            }
 
             if (finishedMatchData) {
                 detailedScoresHTML += `
