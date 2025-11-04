@@ -467,9 +467,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const scoreCol = e.target.closest('.prediction-score-col');
             const details = scoreCol.querySelector('.detailed-scores');
             if (details) {
-                const isHidden = details.style.display === 'none';
-                details.style.display = isHidden ? 'block' : 'none';
-                e.target.textContent = isHidden ? 'Collapse' : 'Expand';
+                const isVisible = details.style.display === 'block';
+                details.style.display = isVisible ? 'none' : 'block';
+                e.target.textContent = isVisible ? 'Expand' : 'Collapse';
             }
         }
     });
