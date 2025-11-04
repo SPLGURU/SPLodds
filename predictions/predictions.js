@@ -213,17 +213,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const actualScoreData = rawTeamData.find(t => t.team_name === homeTeamName)?.rounds?.[game.round];
             if (!actualScoreData) return;
 
-            const decimalPredictionStr = `${predictedScore.home}-${predictedScore.away}`;
-            if (getOutcome(decimalPredictionStr) === getOutcome(actualScoreData.score_str)) {
-                resultSuccesses++;
-            }
-            
             if (currentResultFormat === 'rounded') {
                 const roundedHome = customRound(predictedScore.home);
                 const roundedAway = customRound(predictedScore.away);
                 const roundedScoreStr = `${roundedHome}-${roundedAway}`;
+                if (getOutcome(roundedScoreStr) === getOutcome(actualScoreData.score_str)) {
+                    resultSuccesses++;
+                }
                 if (roundedScoreStr === actualScoreData.score_str) {
                     scoreSuccesses++;
+                }
+            } else { // decimal format
+                const decimalPredictionStr = `${predictedScore.home}-${predictedScore.away}`;
+                if (getOutcome(decimalPredictionStr) === getOutcome(actualScoreData.score_str)) {
+                    resultSuccesses++;
                 }
             }
         });
