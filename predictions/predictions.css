@@ -46,7 +46,7 @@
     margin-left: 5px; /* Spacing from the button */
 }
 
-#model-explanation-panel, #model-evaluation-panel {
+[id^="model-explanation-panel-"], #model-evaluation-panel {
     background-color: #2a2a2a;
     border: 1px solid #444;
     border-radius: 5px;
@@ -76,12 +76,12 @@
     font-weight: bold;
 }
 
-#model-explanation-panel h4, #model-explanation-panel h5 {
+[id^="model-explanation-panel-"] h4, [id^="model-explanation-panel-"] h5 {
     margin-top: 0;
     border-bottom: 1px solid #555;
     padding-bottom: 8px;
 }
-#model-explanation-panel code {
+[id^="model-explanation-panel-"] code {
     display: block;
     background-color: #111;
     padding: 10px;

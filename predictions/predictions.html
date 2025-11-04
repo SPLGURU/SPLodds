@@ -56,24 +56,37 @@
 
         <div class="model-filter-buttons">
             <button class="active" data-model="attack_vs_defense">Attack vs. Defense Model</button>
+            <button data-model="needed_to_score">Needed To Score/Concede</button>
             <span class="model-details-link">Details</span>
         </div>
 
-        <div id="model-explanation-panel" style="display: none;">
+        <div id="model-explanation-panel-attack_vs_defense" style="display: none;">
             <h4>Attack vs. Defense Model</h4>
             <p>This model predicts a score by first estimating the chances (npxG) each team will create based on their opponent's defensive form, and then converting those chances into goals using each team's demonstrated finishing skill.</p>
-            
             <h5>Home Team Predicted Score Formula:</h5>
             <code>( (Home_AvgnpxG + Away_AvgnpxGC) / 2 ) / Home_npxGneededToScore</code>
-
             <h5>Away Team Predicted Score Formula:</h5>
             <code>( (Away_AvgnpxG + Home_AvgnpxGC) / 2 ) / Away_npxGneededToScore</code>
-
             <h5>Variable Definitions:</h5>
             <ul>
                 <li><strong>AvgnpxG:</strong> A team's average non-penalty expected goals per match from the filtered set of games.</li>
                 <li><strong>AvgnpxGC:</strong> A team's average non-penalty expected goals conceded per match from the filtered set of games.</li>
                 <li><strong>npxGneededToScore:</strong> A team's "finishing skill," calculated as (Total npxG / Total npG). If a team has not scored any non-penalty goals in the selected filter, this value cannot be calculated, and the model will not produce a prediction (N/A).</li>
+            </ul>
+        </div>
+
+        <div id="model-explanation-panel-needed_to_score" style="display: none;">
+            <h4>Needed To Score/Concede Model</h4>
+            <p>This model predicts a score by directly comparing a team's finishing skill against their opponent's defensive vulnerability (how many chances they concede for every non-penalty goal).</p>
+            <h5>Home Team Predicted Score Formula:</h5>
+            <code>Away_npxGCneededToConceed / Home_npxGneededToScore</code>
+            <h5>Away Team Predicted Score Formula:</h5>
+            <code>Home_npxGCneededToConceed / Away_npxGneededToScore</code>
+            <h5>Variable Definitions:</h5>
+            <ul>
+                <li><strong>npxGneededToScore:</strong> A team's "finishing skill," calculated as (Total npxG / Total npG).</li>
+                <li><strong>npxGCneededToConceed:</strong> A team's "defensive vulnerability," calculated as (Total npxGC / Total npGC).</li>
+                <li>If any of these four variables cannot be calculated for a match (e.g., a team hasn't scored or conceded a non-penalty goal), the model will not produce a prediction (N/A).</li>
             </ul>
         </div>
 

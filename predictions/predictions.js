@@ -3,8 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const fixturesContainer = document.getElementById('fixtures-container');
     const filterButtonsContainer = document.querySelector('.stats-filter-buttons');
     const resultFormatButtonsContainer = document.querySelector('.result-format-buttons');
+    const modelFilterButtonsContainer = document.querySelector('.model-filter-buttons');
     const modelDetailsLink = document.querySelector('.model-details-link');
-    const modelExplanationPanel = document.getElementById('model-explanation-panel');
     const scoreSuccessRateEl = document.getElementById('score-success-rate');
     const resultSuccessRateEl = document.getElementById('result-success-rate');
     
@@ -248,20 +248,34 @@ document.addEventListener('DOMContentLoaded', () => {
             return { home: 'N/A', away: 'N/A' };
         }
 
-        if (isNaN(homeStats.npxGneededToScore) || isNaN(awayStats.npxGneededToScore)) {
-            return { home: 'N/A', away: 'N/A' };
+        if (currentModel === 'attack_vs_defense') {
+            if (isNaN(homeStats.npxGneededToScore) || isNaN(awayStats.npxGneededToScore)) {
+                return { home: 'N/A', away: 'N/A' };
+            }
+            const homeFinishing = parseFloat(homeStats.npxGneededToScore);
+            const awayFinishing = parseFloat(awayStats.npxGneededToScore);
+            const predHomeNpxG = (parseFloat(homeStats.AvgnpxG) + parseFloat(awayStats.AvgnpxGC)) / 2;
+            const predAwayNpxG = (parseFloat(awayStats.AvgnpxG) + parseFloat(homeStats.AvgnpxGC)) / 2;
+            const predHomeScore = homeFinishing > 0 ? (predHomeNpxG / homeFinishing).toFixed(2) : 'N/A';
+            const predAwayScore = awayFinishing > 0 ? (predAwayNpxG / awayFinishing).toFixed(2) : 'N/A';
+            return { home: predHomeScore, away: predAwayScore };
+
+        } else if (currentModel === 'needed_to_score') {
+            if (isNaN(homeStats.npxGneededToScore) || isNaN(awayStats.npxGneededToScore) || 
+                isNaN(homeStats.npxGCneededToConceed) || isNaN(awayStats.npxGCneededToConceed)) {
+                return { home: 'N/A', away: 'N/A' };
+            }
+            const homeFinishing = parseFloat(homeStats.npxGneededToScore);
+            const awayFinishing = parseFloat(awayStats.npxGneededToScore);
+            const homeConceding = parseFloat(homeStats.npxGCneededToConceed);
+            const awayConceding = parseFloat(awayStats.npxGCneededToConceed);
+
+            const predHomeScore = (homeFinishing > 0) ? (awayConceding / homeFinishing).toFixed(2) : 'N/A';
+            const predAwayScore = (awayFinishing > 0) ? (homeConceding / awayFinishing).toFixed(2) : 'N/A';
+            return { home: predHomeScore, away: predAwayScore };
         }
 
-        const homeFinishing = parseFloat(homeStats.npxGneededToScore);
-        const awayFinishing = parseFloat(awayStats.npxGneededToScore);
-
-        const predHomeNpxG = (parseFloat(homeStats.AvgnpxG) + parseFloat(awayStats.AvgnpxGC)) / 2;
-        const predAwayNpxG = (parseFloat(awayStats.AvgnpxG) + parseFloat(homeStats.AvgnpxGC)) / 2;
-
-        const predHomeScore = homeFinishing > 0 ? (predHomeNpxG / homeFinishing).toFixed(2) : 'N/A';
-        const predAwayScore = awayFinishing > 0 ? (predAwayNpxG / awayFinishing).toFixed(2) : 'N/A';
-        
-        return { home: predHomeScore, away: predAwayScore };
+        return { home: 'N/A', away: 'N/A' }; // Default case
     };
     
     const formatFilterName = (filter, venue) => {
@@ -390,9 +404,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    modelFilterButtonsContainer.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            document.querySelector('.model-filter-buttons button.active').classList.remove('active');
+            e.target.classList.add('active');
+            currentModel = e.target.dataset.model;
+            
+            document.querySelectorAll('[id^="model-explanation-panel-"]').forEach(panel => panel.style.display = 'none');
+
+            const selectedRound = roundSelector.value;
+            if (selectedRound) {
+                renderFixturesForRound(selectedRound);
+            }
+        }
+    });
+
     modelDetailsLink.addEventListener('click', () => {
-        const panel = modelExplanationPanel;
-        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        const panelId = `model-explanation-panel-${currentModel}`;
+        const panel = document.getElementById(panelId);
+        if (panel) {
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        }
     });
 
     fixturesContainer.addEventListener('click', (e) => {
@@ -435,7 +467,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const findAndSelectNextRound = () => {
         if (!fullSchedule || !rawTeamData) return;
 
-        // Create a map of game IDs that are finished
         const finishedGameIds = new Set();
         rawTeamData.forEach(team => {
             Object.values(team.rounds).forEach(roundData => {
@@ -445,17 +476,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Get all unique rounds from the schedule
         const allRounds = [...new Set(fullSchedule.map(g => g.roundNum))].sort((a,b) => a-b);
         
         let nextUnfinishedRound = null;
 
-        // Find the first round that is not fully completed
         for (const roundNum of allRounds) {
             const gamesInScheduleForRound = fullSchedule.filter(g => g.roundNum === roundNum);
             let finishedGamesInRoundCount = 0;
             gamesInScheduleForRound.forEach(game => {
-                // To find a game's ID in the team data, we need to check both teams, but schedule gives us both names
                 const homeTeam = rawTeamData.find(t => t.team_name === game.homeTeam);
                 const gameData = homeTeam?.rounds?.[roundNum];
                 if(gameData) {
@@ -473,7 +501,6 @@ document.addEventListener('DOMContentLoaded', () => {
             roundSelector.value = nextUnfinishedRound;
             renderFixturesForRound(nextUnfinishedRound);
         } else if (allRounds.length > 0) {
-            // If all rounds are finished, select the last one
             const lastRound = allRounds[allRounds.length - 1];
             roundSelector.value = lastRound;
             renderFixturesForRound(lastRound);
