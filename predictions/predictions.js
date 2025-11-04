@@ -85,9 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const homeTeamName = game.homeTeam;
             const awayTeamName = game.awayTeam;
 
-            const homeStats = calculateStatsForTeam(homeTeamName, 'home', roundNum, currentFilter);
-            const awayStats = calculateStatsForTeam(awayTeamName, 'away', roundNum, currentFilter);
-            const predictedScore = calculatePredictedScore(homeStats, awayStats);
+            const predictedScore = calculatePredictedScore(homeTeamName, awayTeamName, roundNum, currentFilter);
 
             let displayHome, displayAway;
             if (currentResultFormat === 'rounded') {
@@ -211,9 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const homeTeamName = fixture.homeTeam;
             const awayTeamName = fixture.awayTeam;
             
-            const homeStats = calculateStatsForTeam(homeTeamName, 'home', game.round, currentFilter);
-            const awayStats = calculateStatsForTeam(awayTeamName, 'away', game.round, currentFilter);
-            const predictedScore = calculatePredictedScore(homeStats, awayStats);
+            const predictedScore = calculatePredictedScore(homeTeamName, awayTeamName, game.round, currentFilter);
 
             if (predictedScore.home === 'N/A' || predictedScore.away === 'N/A') {
                 return;
@@ -254,15 +250,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- CORE CALCULATION LOGIC ---
-    const calculatePredictedScore = (homeStats, awayStats) => {
+    const calculatePredictedScore = (homeTeamName, awayTeamName, roundNum, filter) => {
+        const homeStats = calculateStatsForTeam(homeTeamName, 'home', roundNum, filter);
+        const awayStats = calculateStatsForTeam(awayTeamName, 'away', roundNum, filter);
+
         if (homeStats.message || awayStats.message) {
             return { home: 'N/A', away: 'N/A' };
         }
 
         if (currentModel === 'attack_vs_defense') {
-            if (isNaN(homeStats.npxGneededToScore) || isNaN(awayStats.npxGneededToScore)) {
-                return { home: 'N/A', away: 'N/A' };
-            }
+            if (isNaN(homeStats.npxGneededToScore) || isNaN(awayStats.npxGneededToScore)) return { home: 'N/A', away: 'N/A' };
             const homeFinishing = parseFloat(homeStats.npxGneededToScore);
             const awayFinishing = parseFloat(awayStats.npxGneededToScore);
             const predHomeNpxG = (parseFloat(homeStats.AvgnpxG) + parseFloat(awayStats.AvgnpxGC)) / 2;
@@ -272,21 +269,49 @@ document.addEventListener('DOMContentLoaded', () => {
             return { home: predHomeScore, away: predAwayScore };
 
         } else if (currentModel === 'needed_to_score') {
-            if (isNaN(homeStats.npxGneededToScore) || isNaN(awayStats.npxGneededToScore) || 
-                isNaN(homeStats.npxGCneededToConceed) || isNaN(awayStats.npxGCneededToConceed)) {
-                return { home: 'N/A', away: 'N/A' };
-            }
+            if (isNaN(homeStats.npxGneededToScore) || isNaN(awayStats.npxGneededToScore) || isNaN(homeStats.npxGCneededToConceed) || isNaN(awayStats.npxGCneededToConceed)) return { home: 'N/A', away: 'N/A' };
             const homeFinishing = parseFloat(homeStats.npxGneededToScore);
             const awayFinishing = parseFloat(awayStats.npxGneededToScore);
             const homeConceding = parseFloat(homeStats.npxGCneededToConceed);
             const awayConceding = parseFloat(awayStats.npxGCneededToConceed);
-
             const predHomeScore = (homeFinishing > 0) ? (awayConceding / homeFinishing).toFixed(2) : 'N/A';
             const predAwayScore = (awayFinishing > 0) ? (homeConceding / awayFinishing).toFixed(2) : 'N/A';
             return { home: predHomeScore, away: predAwayScore };
+        
+        } else if (currentModel === 'hybrid_overall' || currentModel === 'hybrid_venue') {
+            const baselineFilter = (currentModel === 'hybrid_overall') 
+                ? { type: 'overall' } 
+                : { type: 'venue_overall' };
+
+            const baselineHomeStats = calculateStatsForTeam(homeTeamName, 'home', roundNum, baselineFilter);
+            const baselineAwayStats = calculateStatsForTeam(awayTeamName, 'away', roundNum, baselineFilter);
+
+            if (baselineHomeStats.message || baselineAwayStats.message) return { home: 'N/A', away: 'N/A' };
+            if (isNaN(baselineHomeStats.npxGneededToScore) || isNaN(baselineAwayStats.npxGneededToScore)) return { home: 'N/A', away: 'N/A' };
+
+            // Calculate Momentum Factors
+            const homeAttackMomentum = (baselineHomeStats.AvgnpxG > 0) ? (homeStats.AvgnpxG / baselineHomeStats.AvgnpxG) : 1;
+            const awayDefenseMomentum = (baselineAwayStats.AvgnpxGC > 0) ? (awayStats.AvgnpxGC / baselineAwayStats.AvgnpxGC) : 1;
+            const awayAttackMomentum = (baselineAwayStats.AvgnpxG > 0) ? (awayStats.AvgnpxG / baselineAwayStats.AvgnpxG) : 1;
+            const homeDefenseMomentum = (baselineHomeStats.AvgnpxGC > 0) ? (homeStats.AvgnpxGC / baselineHomeStats.AvgnpxGC) : 1;
+
+            // Calculate Baselines
+            const baselineHomeNpxG = (parseFloat(baselineHomeStats.AvgnpxG) + parseFloat(baselineAwayStats.AvgnpxGC)) / 2;
+            const baselineAwayNpxG = (parseFloat(baselineAwayStats.AvgnpxG) + parseFloat(baselineHomeStats.AvgnpxGC)) / 2;
+            
+            // Adjust Baselines with Momentum
+            const adjustedHomeNpxG = baselineHomeNpxG * homeAttackMomentum * awayDefenseMomentum;
+            const adjustedAwayNpxG = baselineAwayNpxG * awayAttackMomentum * homeDefenseMomentum;
+
+            // Convert to Goals
+            const homeFinishing = parseFloat(baselineHomeStats.npxGneededToScore);
+            const awayFinishing = parseFloat(baselineAwayStats.npxGneededToScore);
+            const predHomeScore = homeFinishing > 0 ? (adjustedHomeNpxG / homeFinishing).toFixed(2) : 'N/A';
+            const predAwayScore = awayFinishing > 0 ? (adjustedAwayNpxG / awayFinishing).toFixed(2) : 'N/A';
+            return { home: predHomeScore, away: predAwayScore };
         }
 
-        return { home: 'N/A', away: 'N/A' }; // Default case
+        return { home: 'N/A', away: 'N/A' };
     };
     
     const formatFilterName = (filter, venue) => {
@@ -303,15 +328,14 @@ document.addEventListener('DOMContentLoaded', () => {
             .map(([roundNum, roundData]) => ({ roundNum: parseInt(roundNum), ...roundData }))
             .filter(round => {
                 const isBeforeSelectedRound = round.roundNum < beforeRound;
-                if (filter.type === 'overall') {
-                    return isBeforeSelectedRound;
-                }
-                return isBeforeSelectedRound && round.venue === venue;
+                if (!isBeforeSelectedRound) return false;
+                if (filter.type === 'overall') return true;
+                return round.venue === venue; // Applies to 'lastN' and 'venue_overall'
             })
             .sort((a, b) => b.roundNum - a.roundNum);
 
         let gamesToCalculate = [];
-        if (filter.type === 'overall') {
+        if (filter.type === 'overall' || filter.type === 'venue_overall') {
             gamesToCalculate = pastGames;
         } else if (filter.type === 'lastN') {
             if (pastGames.length < filter.value) {

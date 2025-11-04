@@ -55,8 +55,10 @@
         </div>
 
         <div class="model-filter-buttons">
-            <button class="active" data-model="attack_vs_defense">Attack vs. Defense Model</button>
+            <button class="active" data-model="attack_vs_defense">Attack vs. Defense</button>
             <button data-model="needed_to_score">Needed To Score/Concede</button>
+            <button data-model="hybrid_overall">Hybrid Momentum (Overall)</button>
+            <button data-model="hybrid_venue">Hybrid Momentum (Venue)</button>
             <span class="model-details-link">Details</span>
         </div>
 
@@ -88,6 +90,30 @@
                 <li><strong>npxGCneededToConceed:</strong> A team's "defensive vulnerability," calculated as (Total npxGC / Total npGC).</li>
                 <li>If any of these four variables cannot be calculated for a match (e.g., a team hasn't scored or conceded a non-penalty goal), the model will not produce a prediction (N/A).</li>
             </ul>
+        </div>
+
+        <div id="model-explanation-panel-hybrid_overall" style="display: none;">
+            <h4>Hybrid Momentum Model (Overall Baseline)</h4>
+            <p>This model establishes a baseline prediction using season-long data for both teams and then adjusts it based on their recent form (momentum) from the filtered set of games (e.g., Last 3).</p>
+            <h5>1. Baseline Chance Creation:</h5>
+            <code>(Home_Overall_AvgnpxG + Away_Overall_AvgnpxGC) / 2</code>
+            <h5>2. Momentum Adjustment:</h5>
+            <code>Baseline * (Home_LastN_AvgnpxG / Home_Overall_AvgnpxG) * (Away_LastN_AvgnpxGC / Away_Overall_AvgnpxGC)</code>
+            <h5>3. Final Score Prediction:</h5>
+            <code>Adjusted_npxG / Home_Overall_npxGneededToScore</code>
+            <p>This approach uses the stable season-long data as its foundation while still accounting for whether a team is currently in good or bad form.</p>
+        </div>
+
+        <div id="model-explanation-panel-hybrid_venue" style="display: none;">
+            <h4>Hybrid Momentum Model (Venue Baseline)</h4>
+            <p>This model is a variation of the Hybrid model that uses a more specific baseline. Instead of season-long data, it uses only home games for the home team's baseline and only away games for the away team's baseline.</p>
+            <h5>1. Baseline Chance Creation (Venue-Specific):</h5>
+            <code>(Home_All-Home-Games_AvgnpxG + Away_All-Away-Games_AvgnpxGC) / 2</code>
+            <h5>2. Momentum Adjustment:</h5>
+            <code>Baseline * (Home_LastN_AvgnpxG / Home_All-Home-Games_AvgnpxG) * (Away_LastN_AvgnpxGC / Away_All-Away-Games_AvgnpxGC)</code>
+            <h5>3. Final Score Prediction:</h5>
+            <code>Adjusted_npxG / Home_All-Home-Games_npxGneededToScore</code>
+            <p>This aims to provide a more accurate picture by comparing a team's current home form to their typical home performance, and their current away form to their typical away performance.</p>
         </div>
 
         <div class="stats-filter-buttons">
