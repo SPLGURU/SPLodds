@@ -54,13 +54,6 @@
             </select>
         </div>
 
-        <div class="stats-filter-buttons">
-            <button id="filter-overall" data-filter="overall">Overall</button>
-            <button id="filter-last3" class="active" data-filter="lastN" data-value="3">Last 3</button>
-            <button id="filter-last5" data-filter="lastN" data-value="5">Last 5</button>
-            <button id="filter-last8" data-filter="lastN" data-value="8">Last 8</button>
-        </div>
-
         <div class="model-filter-buttons">
             <button class="active" data-model="attack_vs_defense">Attack vs. Defense Model</button>
             <span class="model-details-link">Details</span>
@@ -82,6 +75,18 @@
                 <li><strong>AvgnpxGC:</strong> A team's average non-penalty expected goals conceded per match from the filtered set of games.</li>
                 <li><strong>npxGneededToScore:</strong> A team's "finishing skill," calculated as (Total npxG / Total npG). If a team has not scored any non-penalty goals in the selected filter, this value cannot be calculated, and the model will not produce a prediction (N/A).</li>
             </ul>
+        </div>
+
+        <div class="stats-filter-buttons">
+            <button id="filter-overall" data-filter="overall">Overall</button>
+            <button id="filter-last3" class="active" data-filter="lastN" data-value="3">Last 3</button>
+            <button id="filter-last5" data-filter="lastN" data-value="5">Last 5</button>
+            <button id="filter-last8" data-filter="lastN" data-value="8">Last 8</button>
+        </div>
+
+        <div class="result-format-buttons">
+            <button id="format-rounded" class="active" data-format="rounded">Rounded Results</button>
+            <button id="format-decimal" data-format="decimal">Decimal Results</button>
         </div>
 
         <div id="model-evaluation-panel">

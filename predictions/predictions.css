@@ -18,7 +18,7 @@
     border: 1px solid #555;
 }
 
-.stats-filter-buttons {
+.stats-filter-buttons, .result-format-buttons {
     display: flex;
     justify-content: center;
     gap: 15px;
@@ -33,7 +33,7 @@
     margin-top: 20px;
 }
 
-.stats-filter-buttons button.active, .model-filter-buttons button.active {
+.stats-filter-buttons button.active, .model-filter-buttons button.active, .result-format-buttons button.active {
     background-color: #0056b3;
     box-shadow: 0 0 8px rgba(0, 123, 255, 0.7);
 }

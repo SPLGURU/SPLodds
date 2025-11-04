@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const roundSelector = document.getElementById('round-selector');
     const fixturesContainer = document.getElementById('fixtures-container');
     const filterButtonsContainer = document.querySelector('.stats-filter-buttons');
+    const resultFormatButtonsContainer = document.querySelector('.result-format-buttons');
     const modelDetailsLink = document.querySelector('.model-details-link');
     const modelExplanationPanel = document.getElementById('model-explanation-panel');
     const scoreSuccessRateEl = document.getElementById('score-success-rate');
@@ -10,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let fullSchedule = null;
     let rawTeamData = null;
     let currentFilter = { type: 'lastN', value: 3 };
+    let currentResultFormat = 'rounded';
     let currentModel = 'attack_vs_defense';
 
     // --- HELPER FUNCTIONS ---
@@ -26,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const getOutcome = (scoreStr) => {
         if (!scoreStr || typeof scoreStr !== 'string') return 'invalid';
-        const parts = scoreStr.split('-').map(s => parseInt(s.trim()));
+        const parts = scoreStr.split('-').map(s => parseFloat(s.trim()));
         if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return 'invalid';
         if (parts[0] > parts[1]) return 'homeWin';
         if (parts[1] > parts[0]) return 'awayWin';
@@ -86,13 +88,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const homeStats = calculateStatsForTeam(homeTeamName, 'home', roundNum, currentFilter);
             const awayStats = calculateStatsForTeam(awayTeamName, 'away', roundNum, currentFilter);
             const predictedScore = calculatePredictedScore(homeStats, awayStats);
-            const roundedHome = customRound(predictedScore.home);
-            const roundedAway = customRound(predictedScore.away);
+
+            let displayHome, displayAway;
+            if (currentResultFormat === 'rounded') {
+                displayHome = customRound(predictedScore.home);
+                displayAway = customRound(predictedScore.away);
+            } else {
+                displayHome = predictedScore.home;
+                displayAway = predictedScore.away;
+            }
             
             let scoreBlockHTML = `
                 <div class="score-line score-large">
                     <span class="score-label">Predicted Score:</span>
-                    <span class="score-value">${roundedHome} - ${roundedAway}</span>
+                    <span class="score-value">${displayHome} - ${displayAway}</span>
                 </div>
             `;
 
@@ -195,32 +204,38 @@ document.addEventListener('DOMContentLoaded', () => {
             const awayStats = calculateStatsForTeam(awayTeamName, 'away', game.round, currentFilter);
             const predictedScore = calculatePredictedScore(homeStats, awayStats);
 
-            // Exclude games with N/A predictions from all calculations
             if (predictedScore.home === 'N/A' || predictedScore.away === 'N/A') {
-                return; // Skip this game
+                return;
             }
             
-            totalValidPredictions++; // Only increment for valid predictions
+            totalValidPredictions++;
 
-            const roundedHome = customRound(predictedScore.home);
-            const roundedAway = customRound(predictedScore.away);
-            const roundedScoreStr = `${roundedHome}-${roundedAway}`;
-            
             const actualScoreData = rawTeamData.find(t => t.team_name === homeTeamName)?.rounds?.[game.round];
             if (!actualScoreData) return;
 
-            if(roundedScoreStr === actualScoreData.score_str) {
-                scoreSuccesses++;
-            }
-            if(getOutcome(roundedScoreStr) === getOutcome(actualScoreData.score_str)) {
+            const decimalPredictionStr = `${predictedScore.home}-${predictedScore.away}`;
+            if (getOutcome(decimalPredictionStr) === getOutcome(actualScoreData.score_str)) {
                 resultSuccesses++;
+            }
+            
+            if (currentResultFormat === 'rounded') {
+                const roundedHome = customRound(predictedScore.home);
+                const roundedAway = customRound(predictedScore.away);
+                const roundedScoreStr = `${roundedHome}-${roundedAway}`;
+                if (roundedScoreStr === actualScoreData.score_str) {
+                    scoreSuccesses++;
+                }
             }
         });
 
-        const scoreRate = totalValidPredictions > 0 ? ((scoreSuccesses / totalValidPredictions) * 100).toFixed(1) : 0;
+        if (currentResultFormat === 'decimal') {
+            scoreSuccessRateEl.textContent = 'N/A';
+        } else {
+            const scoreRate = totalValidPredictions > 0 ? ((scoreSuccesses / totalValidPredictions) * 100).toFixed(1) : 0;
+            scoreSuccessRateEl.textContent = `${scoreRate}%`;
+        }
+        
         const resultRate = totalValidPredictions > 0 ? ((resultSuccesses / totalValidPredictions) * 100).toFixed(1) : 0;
-
-        scoreSuccessRateEl.textContent = `${scoreRate}%`;
         resultSuccessRateEl.textContent = `${resultRate}%`;
     };
 
@@ -353,6 +368,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (filterType === 'lastN') {
                 currentFilter.value = parseInt(e.target.dataset.value);
             }
+            const selectedRound = roundSelector.value;
+            if (selectedRound) {
+                renderFixturesForRound(selectedRound);
+            }
+        }
+    });
+
+    resultFormatButtonsContainer.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            document.querySelector('.result-format-buttons button.active').classList.remove('active');
+            e.target.classList.add('active');
+            currentResultFormat = e.target.dataset.format;
             const selectedRound = roundSelector.value;
             if (selectedRound) {
                 renderFixturesForRound(selectedRound);
