@@ -230,8 +230,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return { home: 'N/A', away: 'N/A' };
         }
 
-        const homeFinishing = isNaN(homeStats.npxGneededToScore) ? 1.0 : parseFloat(homeStats.npxGneededToScore);
-        const awayFinishing = isNaN(awayStats.npxGneededToScore) ? 1.0 : parseFloat(awayStats.npxGneededToScore);
+        if (isNaN(homeStats.npxGneededToScore) || isNaN(awayStats.npxGneededToScore)) {
+            return { home: 'N/A', away: 'N/A' };
+        }
+
+        const homeFinishing = parseFloat(homeStats.npxGneededToScore);
+        const awayFinishing = parseFloat(awayStats.npxGneededToScore);
 
         const predHomeNpxG = (parseFloat(homeStats.AvgnpxG) + parseFloat(awayStats.AvgnpxGC)) / 2;
         const predAwayNpxG = (parseFloat(awayStats.AvgnpxG) + parseFloat(homeStats.AvgnpxGC)) / 2;
